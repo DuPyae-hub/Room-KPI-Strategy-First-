@@ -3,7 +3,8 @@
 -- Mirrors Laravel migrations in database/migrations (fresh install).
 --
 -- Usage: Supabase → SQL Editor → paste → Run.
--- After this, point Laravel .env to Supabase (DB_* or DATABASE_URL) and run:
+-- After this, copy .env.example → .env, set DB_CONNECTION=pgsql and Supabase vars (see .env.example).
+-- Then run:
 --   php artisan migrate:status
 -- If tables already exist, Laravel will skip; or use migrate:fresh only on empty DB.
 --
