@@ -31,6 +31,8 @@ class BookingSeeder extends Seeder
             ['Fri', '16:00', '17:30', 'Myanmar Culture', 'Myanmar Culture'],
 
             ['Sat', '09:00', '16:00', 'Myanmar Culture', 'Full Day'],
+
+            ['Sun', '10:00', '12:00', 'Music Club', 'Music Club'],
         ];
 
         foreach ($slots as [$day, $start, $end, $clubName, $activity]) {

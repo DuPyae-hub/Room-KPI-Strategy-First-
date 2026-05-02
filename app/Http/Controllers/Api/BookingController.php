@@ -16,10 +16,10 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class BookingController extends Controller
 {
-    private const DAY_ORDER = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    private const DAY_ORDER = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     /**
-     * Display all bookings grouped by day (Mon–Sat order).
+     * Display all bookings grouped by day (Mon–Sun order).
      */
     public function index(): JsonResponse
     {
@@ -27,8 +27,8 @@ class BookingController extends Controller
             ->with('club')
             ->orderByRaw("CASE day_of_week
                 WHEN 'Mon' THEN 1 WHEN 'Tue' THEN 2 WHEN 'Wed' THEN 3
-                WHEN 'Thu' THEN 4 WHEN 'Fri' THEN 5 WHEN 'Sat' THEN 6
-                ELSE 7 END")
+                WHEN 'Thu' THEN 4 WHEN 'Fri' THEN 5 WHEN 'Sat' THEN 6 WHEN 'Sun' THEN 7
+                ELSE 8 END")
             ->orderBy('start_time')
             ->get()
             ->groupBy('day_of_week');

@@ -1,4 +1,4 @@
-export const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export const DAY_LABELS = {
     Mon: 'Monday',
@@ -7,6 +7,7 @@ export const DAY_LABELS = {
     Thu: 'Thursday',
     Fri: 'Friday',
     Sat: 'Saturday',
+    Sun: 'Sunday',
 };
 
 /** Vertical axis: static academic blocks (24h minutes). */
