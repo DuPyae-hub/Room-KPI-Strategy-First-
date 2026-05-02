@@ -16,7 +16,7 @@ export default function Navbar({ variant = 'public', adminSignedIn, onSignInClic
                             Student Engagement
                         </p>
                         <h1 className="font-semibold leading-tight text-white sm:text-lg">
-                            {variant === 'admin' ? 'Admin · Room Schedule' : 'Academic Room Schedule'}
+                            {variant === 'admin' ? 'Admin · Room Schedule' : 'Activity Room Schedule'}
                         </h1>
                     </div>
                 </Link>
