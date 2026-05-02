@@ -5,13 +5,17 @@ import AdminEditModal from '../components/AdminEditModal';
 import AdminLoginModal from '../components/AdminLoginModal';
 import AdminSlotActionsModal from '../components/AdminSlotActionsModal';
 import BookingModal from '../components/BookingModal';
+import EventDetailModal from '../components/EventDetailModal';
 import Navbar from '../components/Navbar';
 import ScheduleGrid from '../components/ScheduleGrid';
 import { api, getStoredToken, initApiAuth, setStoredToken } from '../lib/api';
 import { useBookings } from '../hooks/useBookings';
+import { useEvents } from '../hooks/useEvents';
 
 export default function AdminPanel() {
-    const { groupedBookings, loading, loadError, refreshBookings } = useBookings();
+    const { groupedBookings, loading: bookingsLoading, loadError, refreshBookings } = useBookings();
+    const { groupedEvents, loading: eventsLoading, refreshEvents } = useEvents();
+    const loading = bookingsLoading || eventsLoading;
 
     const [adminSignedIn, setAdminSignedIn] = useState(false);
     const [loginOpen, setLoginOpen] = useState(false);
@@ -19,6 +23,7 @@ export default function AdminPanel() {
     const [bookingModalCtx, setBookingModalCtx] = useState({ day: 'Mon', startMin: 9 * 60 });
     const [editBooking, setEditBooking] = useState(null);
     const [actionsBooking, setActionsBooking] = useState(null);
+    const [eventDetail, setEventDetail] = useState(null);
 
     useEffect(() => {
         initApiAuth();
@@ -34,6 +39,7 @@ export default function AdminPanel() {
         setAdminSignedIn(true);
         setLoginOpen(false);
         refreshBookings();
+        refreshEvents();
     };
 
     const handleSignOut = async () => {
@@ -83,7 +89,11 @@ export default function AdminPanel() {
                             <strong className="text-orange-600">Orange</strong> cells are pending requests. Locked slots
                             are approved. Click any booking to edit, approve, or delete.{' '}
                             <Link to={adminPath('clubs')} className="font-semibold text-sf-blue underline">
-                                Manage clubs
+                                Clubs
+                            </Link>
+                            {' · '}
+                            <Link to={adminPath('events')} className="font-semibold text-sf-blue underline">
+                                Events
                             </Link>
                             .
                         </p>
@@ -107,8 +117,10 @@ export default function AdminPanel() {
                     <ScheduleGrid
                         variant="admin"
                         groupedBookings={groupedBookings}
+                        groupedEvents={groupedEvents}
                         onAvailableClick={handleAvailableClick}
                         onBookingClick={(b) => setActionsBooking(b)}
+                        onEventClick={(ev) => setEventDetail(ev)}
                     />
                 )}
             </main>
@@ -143,6 +155,12 @@ export default function AdminPanel() {
                 onClose={() => setEditBooking(null)}
                 groupedBookings={groupedBookings}
                 onSaved={() => refreshBookings({ silent: true })}
+            />
+
+            <EventDetailModal
+                open={eventDetail != null}
+                event={eventDetail}
+                onClose={() => setEventDetail(null)}
             />
         </div>
     );

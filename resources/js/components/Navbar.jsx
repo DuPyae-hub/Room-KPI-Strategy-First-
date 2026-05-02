@@ -38,6 +38,12 @@ export default function Navbar({ variant = 'public', adminSignedIn, onSignInClic
                                 Clubs
                             </Link>
                             <Link
+                                to={adminPath('events')}
+                                className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/20"
+                            >
+                                Events
+                            </Link>
+                            <Link
                                 to="/"
                                 className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/20"
                             >

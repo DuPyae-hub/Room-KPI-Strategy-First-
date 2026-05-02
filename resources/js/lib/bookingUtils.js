@@ -15,7 +15,7 @@ export function bookingRangeMinutes(booking) {
     };
 }
 
-/** Row window [rowStart, rowEnd) in minutes vs booking half-open */
+/** Row window [rowStart, rowEnd) in minutes vs booking half-open; also works for events with start_time/end_time. */
 export function bookingOverlapsRow(booking, rowStartMin, rowEndMin) {
     const { start, end } = bookingRangeMinutes(booking);
     return rangesOverlapHalfOpen(start, end, rowStartMin, rowEndMin);
@@ -44,6 +44,12 @@ export function overlapsApprovedBookings(day, startMin, endMin, groupedBookings,
 export function bookingsForCell(day, rowStartMin, rowEndMin, groupedBookings) {
     const list = groupedBookings[day] ?? [];
     return list.filter((b) => bookingOverlapsRow(b, rowStartMin, rowEndMin));
+}
+
+/** Scheduled announcements with start_time/end_time per day. */
+export function eventsForCell(day, rowStartMin, rowEndMin, groupedEvents) {
+    const list = groupedEvents?.[day] ?? [];
+    return list.filter((e) => bookingOverlapsRow(e, rowStartMin, rowEndMin));
 }
 
 /**

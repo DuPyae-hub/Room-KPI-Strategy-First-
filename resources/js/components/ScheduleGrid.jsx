@@ -1,10 +1,10 @@
-import { Lock } from 'lucide-react';
+import { Lock, Megaphone } from 'lucide-react';
 import {
     DAYS,
     DAY_LABELS,
     SCHEDULE_ROWS,
 } from '../lib/constants';
-import { bookingsForCell, isApproved, isPending } from '../lib/bookingUtils';
+import { bookingsForCell, eventsForCell, isApproved, isPending } from '../lib/bookingUtils';
 
 function formatSlotRange(booking) {
     return `${booking.start_time?.slice(0, 5)} – ${booking.end_time?.slice(0, 5)}`;
@@ -16,8 +16,10 @@ function formatSlotRange(booking) {
 export default function ScheduleGrid({
     variant = 'public',
     groupedBookings,
+    groupedEvents = {},
     onAvailableClick,
     onBookingClick,
+    onEventClick,
 }) {
     const isAdmin = variant === 'admin';
 
@@ -43,9 +45,11 @@ export default function ScheduleGrid({
                                         day={day}
                                         row={row}
                                         groupedBookings={groupedBookings}
+                                        groupedEvents={groupedEvents}
                                         isAdmin={isAdmin}
                                         onAvailableClick={onAvailableClick}
                                         onBookingClick={onBookingClick}
+                                        onEventClick={onEventClick}
                                     />
                                 </td>
                             ))}
@@ -61,11 +65,14 @@ function Cell({
     day,
     row,
     groupedBookings,
+    groupedEvents,
     isAdmin,
     onAvailableClick,
     onBookingClick,
+    onEventClick,
 }) {
     const cellBookings = bookingsForCell(day, row.startMin, row.endMin, groupedBookings);
+    const cellEvents = eventsForCell(day, row.startMin, row.endMin, groupedEvents);
     const approved = cellBookings.filter(isApproved);
     const pending = cellBookings.filter(isPending);
 
@@ -80,8 +87,29 @@ function Cell({
     const pendingAdminClass =
         'rounded-lg border-2 border-orange-500 bg-orange-50 p-2 text-sm text-orange-950 shadow-sm ring-1 ring-orange-200 text-left w-full';
 
+    const eventCardClass =
+        'rounded-lg border border-violet-400 bg-violet-50 p-2 text-left text-violet-950 shadow-sm w-full';
+
     return (
         <div className="flex min-h-[128px] flex-col gap-2">
+            {cellEvents.map((ev) => (
+                <button
+                    key={`event-${ev.id}`}
+                    type="button"
+                    onClick={() => onEventClick?.(ev)}
+                    className={`${eventCardClass} cursor-pointer transition hover:ring-2 hover:ring-violet-300`}
+                >
+                    <div className="flex items-start gap-2">
+                        <Megaphone className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" aria-hidden />
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-violet-700">Event</p>
+                            <p className="font-semibold leading-snug">{ev.title}</p>
+                            <p className="mt-1 font-mono text-[11px] text-violet-800/90">{formatSlotRange(ev)}</p>
+                            <p className="mt-0.5 text-[10px] text-violet-700">Tap for details</p>
+                        </div>
+                    </div>
+                </button>
+            ))}
             {approved.map((b) =>
                 isAdmin ? (
                     <button

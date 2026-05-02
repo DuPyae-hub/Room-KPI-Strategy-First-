@@ -1,21 +1,28 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import BookingModal from '../components/BookingModal';
+import EventDetailModal from '../components/EventDetailModal';
 import Navbar from '../components/Navbar';
 import ScheduleGrid from '../components/ScheduleGrid';
 import { useBookings } from '../hooks/useBookings';
+import { useEvents } from '../hooks/useEvents';
 import { adminPath, showStaffDashboardLink } from '../lib/adminRoutes';
 
 /** Poll so approvals from the dashboard show as locked on the public page quickly. */
 const POLL_MS = 12000;
 
 export default function PublicHome() {
-    const { groupedBookings, loading, loadError, refreshBookings } = useBookings({
+    const { groupedBookings, loading: bookingsLoading, loadError, refreshBookings } = useBookings({
         pollingIntervalMs: POLL_MS,
         refreshOnFocus: true,
     });
 
+    const { groupedEvents, loading: eventsLoading } = useEvents({ pollingIntervalMs: POLL_MS });
+
+    const loading = bookingsLoading || eventsLoading;
+
     const [bookingModalOpen, setBookingModalOpen] = useState(false);
+    const [eventDetail, setEventDetail] = useState(null);
     const [bookingModalCtx, setBookingModalCtx] = useState({ day: 'Mon', startMin: 9 * 60 });
 
     const handleAvailableClick = (day, startMin) => {
@@ -61,7 +68,9 @@ export default function PublicHome() {
                     <ScheduleGrid
                         variant="public"
                         groupedBookings={groupedBookings}
+                        groupedEvents={groupedEvents}
                         onAvailableClick={handleAvailableClick}
+                        onEventClick={(ev) => setEventDetail(ev)}
                     />
                 )}
             </main>
@@ -73,6 +82,12 @@ export default function PublicHome() {
                 suggestedStartMin={bookingModalCtx.startMin}
                 groupedBookings={groupedBookings}
                 onCreated={() => refreshBookings({ silent: true })}
+            />
+
+            <EventDetailModal
+                open={eventDetail != null}
+                event={eventDetail}
+                onClose={() => setEventDetail(null)}
             />
         </div>
     );
