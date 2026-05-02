@@ -15,8 +15,21 @@ function resolveApiBaseURL() {
     return `${trimmed}/api`;
 }
 
+const resolvedBaseURL = resolveApiBaseURL();
+
+if (
+    typeof window !== 'undefined' &&
+    import.meta.env.PROD &&
+    resolvedBaseURL.startsWith('/') &&
+    /\.vercel\.app$/i.test(window.location.hostname)
+) {
+    console.warn(
+        '[Strategy First] API calls use /api on this host. Set VITE_API_URL in Vercel to your Laravel base URL (not Supabase) and redeploy.',
+    );
+}
+
 export const api = axios.create({
-    baseURL: resolveApiBaseURL(),
+    baseURL: resolvedBaseURL,
     headers: {
         Accept: 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
