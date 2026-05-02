@@ -11,6 +11,7 @@
 --
 -- Optional: enable Row Level Security per table if you access Supabase from the browser;
 -- this app uses Laravel as API with direct DB connection — RLS not required for Laravel.
+-- This file must never contain passwords or connection secrets — only DDL.
 -- ============================================================================
 
 -- Extensions (Supabase has uuid helpers available; not required for this schema)
