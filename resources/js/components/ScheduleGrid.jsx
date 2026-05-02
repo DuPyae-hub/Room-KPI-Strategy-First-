@@ -26,9 +26,6 @@ export default function ScheduleGrid({
             <table className="min-w-full border-collapse text-left text-sm">
                 <thead>
                     <tr className="bg-sf-navy text-white">
-                        <th className="sticky left-0 z-10 min-w-[140px] bg-sf-navy px-3 py-3 font-semibold">
-                            Time
-                        </th>
                         {DAYS.map((d) => (
                             <th key={d} className="min-w-[160px] px-3 py-3 font-semibold">
                                 <span className="block">{DAY_LABELS[d]}</span>
@@ -40,15 +37,6 @@ export default function ScheduleGrid({
                 <tbody className="divide-y divide-gray-100">
                     {SCHEDULE_ROWS.map((row) => (
                         <tr key={row.label} className="bg-white align-top">
-                            <td className="sticky left-0 z-10 border-r border-gray-100 bg-gray-50 px-3 py-3 text-xs font-semibold text-sf-navy">
-                                {row.label}
-                                <span className="mt-1 block font-normal text-gray-500">
-                                    {String(Math.floor(row.startMin / 60)).padStart(2, '0')}:
-                                    {String(row.startMin % 60).padStart(2, '0')} –{' '}
-                                    {String(Math.floor(row.endMin / 60)).padStart(2, '0')}:
-                                    {String(row.endMin % 60).padStart(2, '0')}
-                                </span>
-                            </td>
                             {DAYS.map((day) => (
                                 <td key={`${day}-${row.label}`} className="border-l border-gray-50 px-2 py-3">
                                     <Cell

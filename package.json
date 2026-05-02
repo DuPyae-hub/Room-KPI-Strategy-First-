@@ -3,7 +3,10 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "fix": "node scripts/fix-app.mjs",
+        "serve": "php artisan serve",
+        "go": "npm run fix && php artisan serve"
     },
     "devDependencies": {
         "@vitejs/plugin-react": "^4.3.4",

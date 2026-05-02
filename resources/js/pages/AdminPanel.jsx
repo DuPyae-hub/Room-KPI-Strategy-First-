@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { adminPath } from '../lib/adminRoutes';
 import AdminEditModal from '../components/AdminEditModal';
 import AdminLoginModal from '../components/AdminLoginModal';
 import AdminSlotActionsModal from '../components/AdminSlotActionsModal';
@@ -78,9 +80,12 @@ export default function AdminPanel() {
                     <div>
                         <h2 className="text-xl font-semibold text-sf-navy">Admin dashboard</h2>
                         <p className="mt-1 max-w-2xl text-sm text-gray-600">
-                            <strong className="text-orange-600">Orange</strong> cells are pending requests. Locked
-                            (blue) slots are approved. Click any booking to edit, approve, or delete. Approving updates
-                            the public schedule immediately (same API data).
+                            <strong className="text-orange-600">Orange</strong> cells are pending requests. Locked slots
+                            are approved. Click any booking to edit, approve, or delete.{' '}
+                            <Link to={adminPath('clubs')} className="font-semibold text-sf-blue underline">
+                                Manage clubs
+                            </Link>
+                            .
                         </p>
                     </div>
                     {!adminSignedIn && (

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-    CLUB_OPTIONS,
     DURATION_OPTIONS_HOURS,
     MYANMAR_CULTURE,
     MYANMAR_DEFAULT_DURATION_HOURS,
@@ -12,6 +11,7 @@ import {
 } from '../lib/time';
 import { findOverlappingApprovedBookings } from '../lib/bookingUtils';
 import { api } from '../lib/api';
+import { useClubs } from '../hooks/useClubs';
 
 function buildStartOptions() {
     const opts = [];
@@ -31,7 +31,8 @@ export default function BookingModal({
     groupedBookings,
     onCreated,
 }) {
-    const [clubName, setClubName] = useState(CLUB_OPTIONS[0]);
+    const { clubs, loading: clubsLoading } = useClubs();
+    const [clubId, setClubId] = useState(null);
     const [activityName, setActivityName] = useState('');
     const [startTime, setStartTime] = useState('09:00');
     const [durationHours, setDurationHours] = useState(2);
@@ -45,10 +46,12 @@ export default function BookingModal({
         setSubmitError('');
         const initialStart = minutesToTimeStr(suggestedStartMin ?? 9 * 60);
         setStartTime(initialStart);
-        setClubName(CLUB_OPTIONS[0]);
         setActivityName('');
         setDurationHours(2);
-    }, [open, suggestedStartMin, day]);
+        if (clubs.length > 0) {
+            setClubId(clubs[0].id);
+        }
+    }, [open, suggestedStartMin, day, clubs]);
 
     const endMinutes = useMemo(() => {
         const start = timeStrToMinutes(startTime);
@@ -71,6 +74,10 @@ export default function BookingModal({
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitError('');
+        if (clubId == null) {
+            setSubmitError('Clubs are still loading or unavailable.');
+            return;
+        }
         if (clientOverlap) {
             setSubmitError('This time slot overlaps with an existing booking.');
             return;
@@ -81,7 +88,7 @@ export default function BookingModal({
                 day_of_week: day,
                 start_time: startTime,
                 end_time: endTimeStr,
-                club_name: clubName,
+                club_id: clubId,
                 activity_name: activityName.trim() || 'Activity',
             });
             onCreated?.();
@@ -89,6 +96,7 @@ export default function BookingModal({
         } catch (err) {
             const msg =
                 err.response?.data?.errors?.start_time?.[0] ??
+                err.response?.data?.errors?.club_id?.[0] ??
                 err.response?.data?.message ??
                 'Unable to submit booking.';
             setSubmitError(msg);
@@ -152,22 +160,28 @@ export default function BookingModal({
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Club</label>
                         <select
-                            value={clubName}
+                            value={clubId ?? ''}
                             onChange={(e) => {
-                                const v = e.target.value;
-                                setClubName(v);
-                                if (v === MYANMAR_CULTURE) {
+                                const id = Number(e.target.value);
+                                setClubId(id);
+                                const selected = clubs.find((c) => c.id === id);
+                                if (selected?.name === MYANMAR_CULTURE) {
                                     setDurationHours(MYANMAR_DEFAULT_DURATION_HOURS);
                                 }
                             }}
                             className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-sf-blue focus:outline-none focus:ring-1 focus:ring-sf-blue"
                             required
+                            disabled={clubsLoading || clubs.length === 0}
                         >
-                            {CLUB_OPTIONS.map((c) => (
-                                <option key={c} value={c}>
-                                    {c}
-                                </option>
-                            ))}
+                            {clubsLoading && (
+                                <option value="">Loading clubs…</option>
+                            )}
+                            {!clubsLoading &&
+                                clubs.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name}
+                                    </option>
+                                ))}
                         </select>
                         <p className="mt-1 text-xs text-gray-500">
                             Myanmar Culture defaults to a {MYANMAR_DEFAULT_DURATION_HOURS}-hour duration (e.g. afternoon
@@ -242,7 +256,7 @@ export default function BookingModal({
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || clientOverlap}
+                            disabled={loading || clientOverlap || clubId == null || clubsLoading}
                             className="rounded-lg bg-sf-blue px-4 py-2 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
                         >
                             {loading ? 'Submitting…' : 'Submit request'}

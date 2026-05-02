@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Booking;
+use App\Models\Club;
 use Illuminate\Database\Seeder;
 
 class BookingSeeder extends Seeder
@@ -32,12 +33,18 @@ class BookingSeeder extends Seeder
             ['Sat', '09:00', '16:00', 'Myanmar Culture', 'Full Day'],
         ];
 
-        foreach ($slots as [$day, $start, $end, $club, $activity]) {
+        foreach ($slots as [$day, $start, $end, $clubName, $activity]) {
+            $club = Club::query()->where('name', $clubName)->first();
+            if (! $club) {
+                continue;
+            }
+
             Booking::query()->create([
+                'club_id' => $club->id,
                 'day_of_week' => $day,
                 'start_time' => $start,
                 'end_time' => $end,
-                'club_name' => $club,
+                'club_name' => $clubName,
                 'activity_name' => $activity,
                 'status' => 'approved',
                 'is_locked' => true,

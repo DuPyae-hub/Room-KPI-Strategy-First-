@@ -4,6 +4,7 @@ import BookingModal from '../components/BookingModal';
 import Navbar from '../components/Navbar';
 import ScheduleGrid from '../components/ScheduleGrid';
 import { useBookings } from '../hooks/useBookings';
+import { adminPath, showStaffDashboardLink } from '../lib/adminRoutes';
 
 /** Poll so approvals from the dashboard show as locked on the public page quickly. */
 const POLL_MS = 12000;
@@ -30,12 +31,19 @@ export default function PublicHome() {
                 <div className="mb-6">
                     <h2 className="text-xl font-semibold text-sf-navy">Weekly overview</h2>
                     <p className="mt-1 max-w-2xl text-sm text-gray-600">
-                        Locked slots are approved bookings. Choose <strong>Available</strong> to request a time. Staff
-                        manage requests from the{' '}
-                        <Link to="/admin-panel" className="font-semibold text-sf-blue underline">
-                            dashboard
-                        </Link>
-                        .
+                        Locked slots are approved bookings. Choose <strong>Available</strong> to request a time.
+                        {showStaffDashboardLink() ? (
+                            <>
+                                {' '}
+                                Staff manage requests from the{' '}
+                                <Link to={adminPath()} className="font-semibold text-sf-blue underline">
+                                    dashboard
+                                </Link>
+                                .
+                            </>
+                        ) : (
+                            <> Staff use the private staff URL to manage requests.</>
+                        )}
                     </p>
                 </div>
 

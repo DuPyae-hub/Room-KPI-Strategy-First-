@@ -17,14 +17,6 @@ export const SCHEDULE_ROWS = [
     { label: '03:00 – 05:00', startMin: 15 * 60, endMin: 17 * 60 },
 ];
 
-export const CLUB_OPTIONS = [
-    'Myanmar Culture',
-    'Dance Club',
-    'Music Club',
-    'Art Club',
-    'Others (Class)',
-];
-
 /** Whole & half hours — flexible booking duration */
 export const DURATION_OPTIONS_HOURS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8];
 

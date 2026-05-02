@@ -5,11 +5,11 @@ import { useMemo, useState } from 'react';
  * Place your file as e.g. `public/assets/logo.png` or `public/assets/logo.svg`.
  */
 const DEFAULT_CANDIDATES = [
+    '/assets/strategy-first-logo.png',
     '/assets/logo.svg',
     '/assets/logo.png',
     '/assets/logo.webp',
     '/assets/logo.jpg',
-    '/assets/strategy-first-logo.png',
     // Typo folder name some setups use
     '/assests/logo.svg',
     '/assests/logo.png',

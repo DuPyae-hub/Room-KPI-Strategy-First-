@@ -4,10 +4,12 @@ namespace App\Models;
 
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Booking extends Model
 {
     protected $fillable = [
+        'club_id',
         'day_of_week',
         'start_time',
         'end_time',
@@ -24,6 +26,11 @@ class Booking extends Model
             'end_time' => 'datetime:H:i',
             'is_locked' => 'boolean',
         ];
+    }
+
+    public function club(): BelongsTo
+    {
+        return $this->belongsTo(Club::class);
     }
 
     /**

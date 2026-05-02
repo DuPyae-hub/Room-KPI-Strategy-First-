@@ -11,12 +11,13 @@ export default {
     theme: {
         extend: {
             colors: {
-                'sf-navy': '#002E4E',
-                'sf-blue': '#005691',
-                'sf-bg': '#F3F4F6',
+                'sf-navy': '#000000',
+                'sf-blue': '#E30613',
+                'sf-bg': '#FFFFFF',
             },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter', 'system-ui', ...defaultTheme.fontFamily.sans],
+                serif: ['Georgia', 'Cambria', 'Times New Roman', ...defaultTheme.fontFamily.serif],
             },
         },
     },

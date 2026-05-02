@@ -1,34 +1,31 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api';
-import { CLUB_OPTIONS } from '../lib/constants';
 import { overlapsApprovedBookings } from '../lib/bookingUtils';
 import { normalizeApiTime, timeStrToMinutes } from '../lib/time';
+import { useClubs } from '../hooks/useClubs';
 
 export default function AdminEditModal({ booking, open, onClose, onSaved, groupedBookings }) {
+    const { clubs, loading: clubsLoading } = useClubs();
     const [start, setStart] = useState('09:00');
     const [end, setEnd] = useState('10:00');
-    const [club, setClub] = useState(CLUB_OPTIONS[0]);
+    const [clubId, setClubId] = useState(null);
     const [activity, setActivity] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-
-    const clubChoices = useMemo(() => {
-        const name = booking?.club_name;
-        if (name && !CLUB_OPTIONS.includes(name)) {
-            return [name, ...CLUB_OPTIONS];
-        }
-        return CLUB_OPTIONS;
-    }, [booking]);
 
     useEffect(() => {
         if (open && booking) {
             setStart(normalizeApiTime(booking.start_time));
             setEnd(normalizeApiTime(booking.end_time));
-            setClub(booking.club_name);
+            const id =
+                booking.club_id != null
+                    ? Number(booking.club_id)
+                    : clubs.find((c) => c.name === booking.club_name)?.id ?? null;
+            setClubId(id);
             setActivity(booking.activity_name ?? '');
             setError('');
         }
-    }, [open, booking]);
+    }, [open, booking, clubs]);
 
     const day = booking?.day_of_week;
 
@@ -51,6 +48,10 @@ export default function AdminEditModal({ booking, open, onClose, onSaved, groupe
 
     const submit = async (e) => {
         e.preventDefault();
+        if (clubId == null) {
+            setError('Select a club.');
+            return;
+        }
         setError('');
         setLoading(true);
         try {
@@ -58,7 +59,7 @@ export default function AdminEditModal({ booking, open, onClose, onSaved, groupe
                 day_of_week: day,
                 start_time: start,
                 end_time: end,
-                club_name: club,
+                club_id: clubId,
                 activity_name: activity,
             });
             onSaved?.();
@@ -66,6 +67,7 @@ export default function AdminEditModal({ booking, open, onClose, onSaved, groupe
         } catch (err) {
             const msg =
                 err.response?.data?.errors?.start_time?.[0] ??
+                err.response?.data?.errors?.club_id?.[0] ??
                 err.response?.data?.message ??
                 'Could not update booking.';
             setError(msg);
@@ -109,15 +111,19 @@ export default function AdminEditModal({ booking, open, onClose, onSaved, groupe
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Club</label>
                         <select
-                            value={club}
-                            onChange={(e) => setClub(e.target.value)}
+                            value={clubId ?? ''}
+                            onChange={(e) => setClubId(Number(e.target.value))}
                             className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-sf-blue focus:outline-none focus:ring-1 focus:ring-sf-blue"
+                            required
+                            disabled={clubsLoading}
                         >
-                            {clubChoices.map((c) => (
-                                <option key={c} value={c}>
-                                    {c}
-                                </option>
-                            ))}
+                            {clubsLoading && <option value="">Loading clubs…</option>}
+                            {!clubsLoading &&
+                                clubs.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name}
+                                    </option>
+                                ))}
                         </select>
                     </div>
                     <div>
@@ -151,7 +157,7 @@ export default function AdminEditModal({ booking, open, onClose, onSaved, groupe
                         </button>
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || clubsLoading || clubId == null}
                             className="rounded-lg bg-sf-blue px-4 py-2 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
                         >
                             {loading ? 'Saving…' : 'Save changes'}

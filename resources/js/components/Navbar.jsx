@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import StrategyFirstLogo from './StrategyFirstLogo';
+import { adminPath, showStaffDashboardLink } from '../lib/adminRoutes';
 
 /**
  * @param {'public' | 'admin'} variant
@@ -11,8 +12,8 @@ export default function Navbar({ variant = 'public', adminSignedIn, onSignInClic
                 <Link to="/" className="flex min-w-0 items-center gap-4">
                     <StrategyFirstLogo />
                     <div className="min-w-0">
-                        <p className="text-xs font-medium uppercase tracking-widest text-white/70">
-                            Strategy First
+                        <p className="font-serif text-xs font-medium tracking-wide text-[#E30613]">
+                            Student Engagement
                         </p>
                         <h1 className="font-semibold leading-tight text-white sm:text-lg">
                             {variant === 'admin' ? 'Admin · Room Schedule' : 'Academic Room Schedule'}
@@ -20,9 +21,9 @@ export default function Navbar({ variant = 'public', adminSignedIn, onSignInClic
                     </div>
                 </Link>
                 <nav className="flex flex-wrap items-center gap-2">
-                    {variant === 'public' && (
+                    {variant === 'public' && showStaffDashboardLink() && (
                         <Link
-                            to="/admin-panel"
+                            to={adminPath()}
                             className="rounded-lg bg-sf-blue px-4 py-2 text-sm font-semibold text-white hover:brightness-110"
                         >
                             Staff dashboard
@@ -30,6 +31,12 @@ export default function Navbar({ variant = 'public', adminSignedIn, onSignInClic
                     )}
                     {variant === 'admin' && (
                         <>
+                            <Link
+                                to={adminPath('clubs')}
+                                className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/20"
+                            >
+                                Clubs
+                            </Link>
                             <Link
                                 to="/"
                                 className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/20"

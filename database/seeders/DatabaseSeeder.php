@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
         ]);
 
+        $this->call(ClubSeeder::class);
         $this->call(BookingSeeder::class);
     }
 }
