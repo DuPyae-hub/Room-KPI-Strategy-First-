@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AdminLoginModal from '../components/AdminLoginModal';
 import Navbar from '../components/Navbar';
 import { adminPath } from '../lib/adminRoutes';
@@ -23,9 +23,9 @@ function flattenEvents(grouped) {
 }
 
 export default function AdminEventsPage() {
+    const navigate = useNavigate();
     const { groupedEvents, loading, error, refreshEvents } = useEvents();
     const [adminSignedIn, setAdminSignedIn] = useState(false);
-    const [loginOpen, setLoginOpen] = useState(false);
     const [formError, setFormError] = useState('');
     const [saving, setSaving] = useState(false);
 
@@ -43,17 +43,12 @@ export default function AdminEventsPage() {
 
     useEffect(() => {
         initApiAuth();
-        const has = Boolean(getStoredToken());
-        setAdminSignedIn(has);
-        if (!has) {
-            setLoginOpen(true);
-        }
+        setAdminSignedIn(Boolean(getStoredToken()));
     }, []);
 
     const handleSignedIn = (token) => {
         setStoredToken(token);
         setAdminSignedIn(true);
-        setLoginOpen(false);
         refreshEvents();
     };
 
@@ -65,7 +60,6 @@ export default function AdminEventsPage() {
         }
         setStoredToken(null);
         setAdminSignedIn(false);
-        setLoginOpen(true);
     };
 
     const resetForm = () => {
@@ -82,7 +76,6 @@ export default function AdminEventsPage() {
     const submitCreate = async (e) => {
         e.preventDefault();
         if (!adminSignedIn) {
-            setLoginOpen(true);
             return;
         }
         setFormError('');
@@ -169,38 +162,34 @@ export default function AdminEventsPage() {
             <Navbar
                 variant="admin"
                 adminSignedIn={adminSignedIn}
-                onSignInClick={() => setLoginOpen(true)}
+                onSignInClick={() => {}}
                 onSignOut={handleSignOut}
             />
 
             <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="mb-6">
-                    <Link
-                        to={adminPath()}
-                        className="text-sm font-medium text-sf-blue underline hover:no-underline"
-                    >
-                        ← Back to schedule
-                    </Link>
-                    <h2 className="mt-2 text-xl font-semibold text-sf-navy">Event announcements</h2>
-                    <p className="mt-1 text-sm text-gray-600">
-                        Appear on the weekly schedule; visitors tap for details (image, time, location, description).
-                    </p>
-                </div>
+                {adminSignedIn ? (
+                    <>
+                        <div className="mb-6">
+                            <Link
+                                to={adminPath()}
+                                className="text-sm font-medium text-sf-blue underline hover:no-underline"
+                            >
+                                ← Back to schedule
+                            </Link>
+                            <h2 className="mt-2 text-xl font-semibold text-sf-navy">Event announcements</h2>
+                            <p className="mt-1 text-sm text-gray-600">
+                                Appear on the weekly schedule; visitors tap for details (image, time, location,
+                                description).
+                            </p>
+                        </div>
 
-                {!adminSignedIn && (
-                    <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                        Sign in to manage announcements.
-                    </p>
-                )}
+                        {formError && (
+                            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                                {formError}
+                            </div>
+                        )}
 
-                {formError && (
-                    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                        {formError}
-                    </div>
-                )}
-
-                {adminSignedIn && (
-                    <form
+                        <form
                         onSubmit={editingId ? (e) => { e.preventDefault(); saveEdit(editingId); } : submitCreate}
                         className="mb-8 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
                     >
@@ -313,19 +302,18 @@ export default function AdminEventsPage() {
                                 )}
                             </div>
                         </div>
-                    </form>
-                )}
+                        </form>
 
-                {error && (
+                        {error && (
                     <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                         {error}
                     </div>
                 )}
 
-                {loading ? (
-                    <p className="text-gray-500">Loading…</p>
-                ) : (
-                    <ul className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                        {loading ? (
+                            <p className="text-gray-500">Loading…</p>
+                        ) : (
+                            <ul className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                         {list.map((ev) => (
                             <li
                                 key={ev.id}
@@ -362,13 +350,30 @@ export default function AdminEventsPage() {
                         {list.length === 0 && !loading && (
                             <li className="px-4 py-8 text-center text-sm text-gray-500">No announcements yet.</li>
                         )}
-                    </ul>
+                            </ul>
+                        )}
+                    </>
+                ) : (
+                    <div className="mx-auto max-w-lg rounded-xl border border-gray-200 bg-white px-6 py-14 text-center shadow-sm">
+                        <h2 className="text-xl font-semibold text-sf-navy">Staff sign-in required</h2>
+                        <p className="mt-3 text-sm text-gray-600">
+                            Sign in below to manage event announcements, or return to the public site.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/')}
+                            className="mt-8 text-sm font-semibold text-sf-blue underline hover:no-underline"
+                        >
+                            ← Back to public schedule
+                        </button>
+                    </div>
                 )}
             </main>
 
             <AdminLoginModal
-                open={loginOpen}
-                onClose={() => setLoginOpen(false)}
+                open={!adminSignedIn}
+                onClose={() => {}}
+                onCancel={() => navigate('/')}
                 onLoggedIn={handleSignedIn}
             />
         </div>

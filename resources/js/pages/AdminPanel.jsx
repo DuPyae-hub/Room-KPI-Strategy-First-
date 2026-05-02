@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { adminPath } from '../lib/adminRoutes';
 import AdminEditModal from '../components/AdminEditModal';
 import AdminLoginModal from '../components/AdminLoginModal';
@@ -13,12 +13,12 @@ import { useBookings } from '../hooks/useBookings';
 import { useEvents } from '../hooks/useEvents';
 
 export default function AdminPanel() {
+    const navigate = useNavigate();
     const { groupedBookings, loading: bookingsLoading, loadError, refreshBookings } = useBookings();
     const { groupedEvents, loading: eventsLoading, refreshEvents } = useEvents();
     const loading = bookingsLoading || eventsLoading;
 
     const [adminSignedIn, setAdminSignedIn] = useState(false);
-    const [loginOpen, setLoginOpen] = useState(false);
     const [bookingModalOpen, setBookingModalOpen] = useState(false);
     const [bookingModalCtx, setBookingModalCtx] = useState({ day: 'Mon', startMin: 9 * 60 });
     const [editBooking, setEditBooking] = useState(null);
@@ -27,17 +27,12 @@ export default function AdminPanel() {
 
     useEffect(() => {
         initApiAuth();
-        const has = Boolean(getStoredToken());
-        setAdminSignedIn(has);
-        if (!has) {
-            setLoginOpen(true);
-        }
+        setAdminSignedIn(Boolean(getStoredToken()));
     }, []);
 
     const handleSignedIn = (token) => {
         setStoredToken(token);
         setAdminSignedIn(true);
-        setLoginOpen(false);
         refreshBookings();
         refreshEvents();
     };
@@ -50,12 +45,10 @@ export default function AdminPanel() {
         }
         setStoredToken(null);
         setAdminSignedIn(false);
-        setLoginOpen(true);
     };
 
     const handleAvailableClick = (day, startMin) => {
         if (!adminSignedIn) {
-            setLoginOpen(true);
             return;
         }
         setBookingModalCtx({ day, startMin });
@@ -77,56 +70,76 @@ export default function AdminPanel() {
             <Navbar
                 variant="admin"
                 adminSignedIn={adminSignedIn}
-                onSignInClick={() => setLoginOpen(true)}
+                onSignInClick={() => {}}
                 onSignOut={handleSignOut}
             />
 
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                        <h2 className="text-xl font-semibold text-sf-navy">Admin dashboard</h2>
-                        <p className="mt-1 max-w-2xl text-sm text-gray-600">
-                            <strong className="text-orange-600">Orange</strong> cells are pending requests. Locked slots
-                            are approved. Click any booking to edit, approve, or delete.{' '}
-                            <Link to={adminPath('clubs')} className="font-semibold text-sf-blue underline">
-                                Clubs
-                            </Link>
-                            {' · '}
-                            <Link to={adminPath('events')} className="font-semibold text-sf-blue underline">
-                                Events
+                {adminSignedIn ? (
+                    <>
+                        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                                <h2 className="text-xl font-semibold text-sf-navy">Admin dashboard</h2>
+                                <p className="mt-1 max-w-2xl text-sm text-gray-600">
+                                    <strong className="text-orange-600">Orange</strong> cells are pending requests.
+                                    Locked slots are approved. Click any booking to edit, approve, or delete.{' '}
+                                    <Link to={adminPath('clubs')} className="font-semibold text-sf-blue underline">
+                                        Clubs
+                                    </Link>
+                                    {' · '}
+                                    <Link to={adminPath('events')} className="font-semibold text-sf-blue underline">
+                                        Events
+                                    </Link>
+                                    .
+                                </p>
+                            </div>
+                        </div>
+
+                        {loadError && (
+                            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                                {loadError}
+                            </div>
+                        )}
+
+                        {loading ? (
+                            <div className="flex justify-center rounded-xl border border-gray-200 bg-white py-20 text-gray-500 shadow-sm">
+                                Loading schedule…
+                            </div>
+                        ) : (
+                            <ScheduleGrid
+                                variant="admin"
+                                groupedBookings={groupedBookings}
+                                groupedEvents={groupedEvents}
+                                onAvailableClick={handleAvailableClick}
+                                onBookingClick={(b) => setActionsBooking(b)}
+                                onEventClick={(ev) => setEventDetail(ev)}
+                            />
+                        )}
+                    </>
+                ) : (
+                    <div className="mx-auto max-w-lg rounded-xl border border-gray-200 bg-white px-6 py-14 text-center shadow-sm">
+                        <h2 className="text-xl font-semibold text-sf-navy">Staff sign-in required</h2>
+                        <p className="mt-3 text-sm text-gray-600">
+                            Enter administrator credentials in the window below to view and manage the schedule.
+                            Everyone else can keep using the{' '}
+                            <Link to="/" className="font-semibold text-sf-blue underline">
+                                public schedule
                             </Link>
                             .
                         </p>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/')}
+                            className="mt-8 text-sm font-semibold text-sf-blue underline hover:no-underline"
+                        >
+                            ← Back to public schedule
+                        </button>
                     </div>
-                    {!adminSignedIn && (
-                        <p className="text-sm font-medium text-amber-800">Sign in to manage bookings.</p>
-                    )}
-                </div>
-
-                {loadError && (
-                    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                        {loadError}
-                    </div>
-                )}
-
-                {loading ? (
-                    <div className="flex justify-center rounded-xl border border-gray-200 bg-white py-20 text-gray-500 shadow-sm">
-                        Loading schedule…
-                    </div>
-                ) : (
-                    <ScheduleGrid
-                        variant="admin"
-                        groupedBookings={groupedBookings}
-                        groupedEvents={groupedEvents}
-                        onAvailableClick={handleAvailableClick}
-                        onBookingClick={(b) => setActionsBooking(b)}
-                        onEventClick={(ev) => setEventDetail(ev)}
-                    />
                 )}
             </main>
 
             <BookingModal
-                open={bookingModalOpen}
+                open={bookingModalOpen && adminSignedIn}
                 onClose={() => setBookingModalOpen(false)}
                 day={bookingModalCtx.day}
                 suggestedStartMin={bookingModalCtx.startMin}
@@ -135,14 +148,15 @@ export default function AdminPanel() {
             />
 
             <AdminLoginModal
-                open={loginOpen}
-                onClose={() => setLoginOpen(false)}
+                open={!adminSignedIn}
+                onClose={() => {}}
+                onCancel={() => navigate('/')}
                 onLoggedIn={handleSignedIn}
             />
 
             <AdminSlotActionsModal
                 booking={actionsBooking}
-                open={actionsBooking != null}
+                open={actionsBooking != null && adminSignedIn}
                 onClose={() => setActionsBooking(null)}
                 onEdit={(b) => setEditBooking(b)}
                 onApprove={handleApprove}
@@ -151,14 +165,14 @@ export default function AdminPanel() {
 
             <AdminEditModal
                 booking={editBooking}
-                open={editBooking != null}
+                open={editBooking != null && adminSignedIn}
                 onClose={() => setEditBooking(null)}
                 groupedBookings={groupedBookings}
                 onSaved={() => refreshBookings({ silent: true })}
             />
 
             <EventDetailModal
-                open={eventDetail != null}
+                open={eventDetail != null && adminSignedIn}
                 event={eventDetail}
                 onClose={() => setEventDetail(null)}
             />

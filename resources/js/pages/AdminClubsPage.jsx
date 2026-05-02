@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { adminPath } from '../lib/adminRoutes';
 import AdminLoginModal from '../components/AdminLoginModal';
 import Navbar from '../components/Navbar';
@@ -7,9 +7,9 @@ import { api, getStoredToken, initApiAuth, setStoredToken } from '../lib/api';
 import { useClubs } from '../hooks/useClubs';
 
 export default function AdminClubsPage() {
+    const navigate = useNavigate();
     const { clubs, loading, error, refreshClubs } = useClubs();
     const [adminSignedIn, setAdminSignedIn] = useState(false);
-    const [loginOpen, setLoginOpen] = useState(false);
     const [name, setName] = useState('');
     const [sortOrder, setSortOrder] = useState(0);
     const [formError, setFormError] = useState('');
@@ -20,17 +20,12 @@ export default function AdminClubsPage() {
 
     useEffect(() => {
         initApiAuth();
-        const has = Boolean(getStoredToken());
-        setAdminSignedIn(has);
-        if (!has) {
-            setLoginOpen(true);
-        }
+        setAdminSignedIn(Boolean(getStoredToken()));
     }, []);
 
     const handleSignedIn = (token) => {
         setStoredToken(token);
         setAdminSignedIn(true);
-        setLoginOpen(false);
         refreshClubs();
     };
 
@@ -42,13 +37,11 @@ export default function AdminClubsPage() {
         }
         setStoredToken(null);
         setAdminSignedIn(false);
-        setLoginOpen(true);
     };
 
     const submitCreate = async (e) => {
         e.preventDefault();
         if (!adminSignedIn) {
-            setLoginOpen(true);
             return;
         }
         setFormError('');
@@ -121,42 +114,37 @@ export default function AdminClubsPage() {
             <Navbar
                 variant="admin"
                 adminSignedIn={adminSignedIn}
-                onSignInClick={() => setLoginOpen(true)}
+                onSignInClick={() => {}}
                 onSignOut={handleSignOut}
             />
 
             <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-                    <div>
-                        <Link
-                            to={adminPath()}
-                            className="text-sm font-medium text-sf-blue underline hover:no-underline"
-                        >
-                            ← Back to schedule
-                        </Link>
-                        <h2 className="mt-2 text-xl font-semibold text-sf-navy">Clubs</h2>
-                        <p className="mt-1 text-sm text-gray-600">
-                            Add, rename, or remove clubs. Names appear in the public booking form. Deleting is blocked if
-                            any booking uses the club.
-                        </p>
-                    </div>
-                </div>
+                {adminSignedIn ? (
+                    <>
+                        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                            <div>
+                                <Link
+                                    to={adminPath()}
+                                    className="text-sm font-medium text-sf-blue underline hover:no-underline"
+                                >
+                                    ← Back to schedule
+                                </Link>
+                                <h2 className="mt-2 text-xl font-semibold text-sf-navy">Clubs</h2>
+                                <p className="mt-1 text-sm text-gray-600">
+                                    Add, rename, or remove clubs. Names appear in the public booking form. Deleting is
+                                    blocked if any booking uses the club.
+                                </p>
+                            </div>
+                        </div>
 
-                {!adminSignedIn && (
-                    <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                        Sign in to manage clubs.
-                    </p>
-                )}
-
-                {formError && (
+                        {formError && (
                     <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                         {formError}
                     </div>
                 )}
 
-                {adminSignedIn && (
-                    <form
-                        onSubmit={submitCreate}
+                        <form
+                            onSubmit={submitCreate}
                         className="mb-8 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
                     >
                         <h3 className="text-sm font-semibold text-sf-navy">Add club</h3>
@@ -192,19 +180,18 @@ export default function AdminClubsPage() {
                                 Add
                             </button>
                         </div>
-                    </form>
-                )}
+                        </form>
 
-                {error && (
+                        {error && (
                     <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                         {error}
                     </div>
                 )}
 
-                {loading ? (
-                    <p className="text-gray-500">Loading clubs…</p>
-                ) : (
-                    <ul className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                        {loading ? (
+                            <p className="text-gray-500">Loading clubs…</p>
+                        ) : (
+                            <ul className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                         {clubs.map((c) => (
                             <li key={c.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                                 {editingId === c.id ? (
@@ -273,13 +260,30 @@ export default function AdminClubsPage() {
                         {clubs.length === 0 && !loading && (
                             <li className="px-4 py-8 text-center text-sm text-gray-500">No clubs yet.</li>
                         )}
-                    </ul>
+                            </ul>
+                        )}
+                    </>
+                ) : (
+                    <div className="mx-auto max-w-lg rounded-xl border border-gray-200 bg-white px-6 py-14 text-center shadow-sm">
+                        <h2 className="text-xl font-semibold text-sf-navy">Staff sign-in required</h2>
+                        <p className="mt-3 text-sm text-gray-600">
+                            Sign in below to manage clubs, or return to the public site.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/')}
+                            className="mt-8 text-sm font-semibold text-sf-blue underline hover:no-underline"
+                        >
+                            ← Back to public schedule
+                        </button>
+                    </div>
                 )}
             </main>
 
             <AdminLoginModal
-                open={loginOpen}
-                onClose={() => setLoginOpen(false)}
+                open={!adminSignedIn}
+                onClose={() => {}}
+                onCancel={() => navigate('/')}
                 onLoggedIn={handleSignedIn}
             />
         </div>

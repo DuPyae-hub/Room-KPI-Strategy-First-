@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 
-export default function AdminLoginModal({ open, onClose, onLoggedIn }) {
+export default function AdminLoginModal({ open, onClose, onCancel, onLoggedIn }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -25,7 +25,7 @@ export default function AdminLoginModal({ open, onClose, onLoggedIn }) {
         try {
             const { data } = await api.post('/auth/login', { email, password });
             onLoggedIn(data.token);
-            onClose();
+            onClose?.();
         } catch (err) {
             const msg =
                 err.response?.data?.message ??
@@ -75,10 +75,10 @@ export default function AdminLoginModal({ open, onClose, onLoggedIn }) {
                     <div className="flex justify-end gap-2 pt-2">
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={() => (onCancel ?? onClose)?.()}
                             className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                         >
-                            Cancel
+                            {onCancel ? 'Back to public schedule' : 'Cancel'}
                         </button>
                         <button
                             type="submit"
