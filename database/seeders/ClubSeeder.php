@@ -16,8 +16,9 @@ class ClubSeeder extends Seeder
             'Myanmar Culture',
             'Dance Club',
             'Music Club',
-            'Art Club',
+            'Sports Club',
             'Others (Class)',
+            'Art Club',
             'Media',
         ];
 
