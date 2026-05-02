@@ -3,6 +3,7 @@
 -- Mirrors Laravel migrations in database/migrations (fresh install).
 --
 -- Usage: Supabase → SQL Editor → paste → Run.
+-- Project ref: pxczvudicswvzsuwenpd → Dashboard: https://supabase.com/dashboard/project/pxczvudicswvzsuwenpd
 -- After this, copy .env.example → .env, set DB_CONNECTION=pgsql and Supabase vars (see .env.example).
 -- Then run:
 --   php artisan migrate:status
